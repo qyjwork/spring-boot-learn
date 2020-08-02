@@ -1,0 +1,66 @@
+server:
+  port: 16000
+  servlet:
+    context-path: /
+spring:
+  application:
+    name: service-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: service-api
+          uri: lb://service-api
+          predicates:
+            - Path=/api/**
+          order: -10
+          filters:
+            - StripPrefix=1
+        - id: service-manageapi
+          uri: lb://service-manageapi
+          predicates:
+            - Path=/manage/**
+          order: -10
+          filters:
+            - StripPrefix=1
+        - id: service-webapi
+          uri: lb://service-websiteapi
+          predicates:
+            - Path=/website/**
+          order: -10
+          filters:
+            - StripPrefix=1
+        - id: service-authapi
+          uri: lb://service-authapi
+          predicates:
+            - Path=/auth/**
+          order: -10
+          filters:
+            - StripPrefix=1
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      default-filters:
+        - name: Hystrix
+          args:
+            name: fallback
+            fallbackUri: forward:/fallback
+        - name: AuthFilterFactory
+
+eureka:
+  client:
+    enabled: true
+    fetch-registry: true
+    register-with-eureka: true
+    order: 0
+    service-url:
+      defaultZone: http://server.imacoder.cn:15000/eureka/
+  instance:
+    appname: service-gateway
+    ip-address: 172.16.25.109
+    instance-id: ${spring.application.name}:${eureka.instance.ip-address}:${server.port}
+    hostname: service-gateway
+
+
+
+
